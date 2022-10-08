@@ -27,10 +27,10 @@ public class TerrainRenderer {
 	}
 	
 	public void render(List<Terrain> terrains) {
-		for(int i = 0; i < terrains.size(); i++) {
-			prepareTerrain(terrains.get(i));
-			loadModelMatrix(terrains.get(i));
-			GL11.glDrawElements(GL11.GL_TRIANGLES, terrains.get(i).getModel().getVertexCount(),GL11.GL_UNSIGNED_INT,0);
+		for(Terrain terrain  : terrains) {
+			prepareTerrain(terrain);
+			loadModelMatrix(terrain);
+			GL11.glDrawElements(GL11.GL_TRIANGLES, terrain.getModel().getVertexCount(),GL11.GL_UNSIGNED_INT,0);
 			unbindTextureModel();
 		}
 	}
