@@ -6,16 +6,19 @@ import org.lwjgl.util.vector.Vector3f;
 import entities.Camera;
 import entities.Entity;
 import entities.Light;
+import entities.Player;
 import models.RawModel;
 import models.TextureModel;
+import objLoader.EntityLoader;
+import objLoader.ModelData;
+import objLoader.OBJFileLoader;
 import renderingEngine.DisplayMannager;
 import renderingEngine.Loader;
 import renderingEngine.MasterRenderer;
-import renderingEngine.ObjLoader;
-import renderingEngine.EntityRenderer;
-import shaders.StaticShaders;
 import terrain.Terrain;
 import textures.ModelTexture;
+import textures.TerrainTexture;
+import textures.TerrainTexturePack;
 
 public class MainGameLoop {
 
@@ -24,29 +27,25 @@ public class MainGameLoop {
 		
 		DisplayMannager.createDisplay();
 		Loader loader = new Loader();
-		RawModel model  = ObjLoader.loadObject("stall", loader);
-		RawModel rawFern = ObjLoader.loadObject("fern", loader);
+		EntityLoader entiLoader = new EntityLoader();
 		
-		TextureModel staticModel = new TextureModel(model, new ModelTexture(loader.loadTexture("stallTexture")));
-		TextureModel staticFern = new TextureModel(rawFern, new ModelTexture(loader.loadTexture("fern")));
+	    Entity entity = entiLoader.loadEntity("stall", "stallTexture", false, false, 0, 1, new Vector3f(0,0,-35), 0, 180, 0, 2);
+		Player player = entiLoader.loadPlayer("fern", "fern", false, true, 0, 0, new Vector3f(0,0,-23), 0, 0, 0, 1);
 		
-		ModelTexture texture = staticModel.getTexture();
-		texture.setReflectivity(1);
-		texture.setShineDamper(10);
+		TerrainTexture backgroundTexture  = new TerrainTexture(loader.loadTexture("grass1"));
+		TerrainTexture rTexture  = new TerrainTexture(loader.loadTexture("mud"));
+		TerrainTexture gTexture  = new TerrainTexture(loader.loadTexture("grassFlowers"));
+		TerrainTexture bTexture  = new TerrainTexture(loader.loadTexture("path"));
+		TerrainTexture blendMap  = new TerrainTexture(loader.loadTexture("blendMap"));
 		
-		ModelTexture fernTexture = staticFern.getTexture();
-		fernTexture.setReflectivity(0);
-		fernTexture.setShineDamper(100);
+		TerrainTexturePack pack =new TerrainTexturePack(backgroundTexture,rTexture,gTexture,bTexture);
 		
-		Terrain terrain = new Terrain(0,-1,loader,new ModelTexture(loader.loadTexture("grass")));
-		Terrain terrain2 = new Terrain(1,-1,loader,new ModelTexture(loader.loadTexture("grass")));
+		Terrain terrain = new Terrain(-1,-1,loader,pack,blendMap);
+		Terrain terrain2 = new Terrain(0,-1,loader,pack,blendMap);
 		
-		Entity entity = new Entity(staticModel, new Vector3f(0,0,-35),0,0,0,1);
-		Entity entity2 = new Entity(staticFern, new Vector3f(0,0,-5),0,0,0,1);
-		fernTexture.setHasTransparency(true);
-		fernTexture.setUseFakeLighting(true);
-		Light light = new Light(new Vector3f(5,-12,-33), new Vector3f(1,1,1));
+		Light light = new Light(new Vector3f(0,50,0), new Vector3f(1,1,0.95f));
 		Camera camera = new Camera();
+		camera.setPosition(new Vector3f(0,20,30));
 		
 		MasterRenderer mr = new MasterRenderer();
 		
@@ -55,8 +54,9 @@ public class MainGameLoop {
 			// game loop
 			mr.processTerrain(terrain2);
 			mr.processTerrain(terrain);
+			player.move();
 			mr.processEntity(entity);
-			mr.processEntity(entity2);
+			mr.processEntity(player);
 			mr.render(light, camera);
 			DisplayMannager.updateDisplay();
 		}
